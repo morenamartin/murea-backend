@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum EstadoPostulacion {
+  postulado
+  entrevista
+  en_espera
+  aceptado
+  rechazado
+  descartado
+  para_despues
+}
+
+enum TipoEntrevista {
+  hr
+  tecnica
+  manager
+  desafio
+  otro
+}
+
+enum TonosCarta {
+  formal
+  cercano
+  directo
+  creativo
+}
+
+enum TipoMeta {
+  diaria
+  semanal
+}
+
+// ─────────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────────
+
+model Usuario {
+  id                   String        @id // Mismo ID de Supabase Auth
+  nombre               String
+  email                String        @unique
+  cvTexto              String?
+  cvUrl                String?
+  portfolioUrl         String?
+  portfolioContenido   String?
+  githubUsername       String?
+  githubData           Json?
+  linkedinData         Json?
+  creadoEn             DateTime      @default(now())
+  actualizadoEn        DateTime      @updatedAt
+  gaps                 Json?
+
+  postulaciones        Postulacion[]
+  plantillas           Plantilla[]
+  metas                Meta[]
+
+  @@map("usuarios")
+}
+
+model Postulacion {
+  id               String             @id @default(cuid())
+  userId           String
+  empresa          String
+  logo             String?
+  rol              String
+  descripcion      String
+  urlOriginal      String?
+  estado           EstadoPostulacion
+  matchPorcentaje  Int?
+  skillsMatch      String[]
+  skillsFaltantes  String[]
+  redFlags         String[]
+  veredictoIA      String?
+  tecnologias      String[]
+  fechaPostulacion DateTime?
+  creadoEn         DateTime           @default(now())
+  actualizadoEn    DateTime           @updatedAt
+
+  usuario          Usuario            @relation(fields: [userId], references: [id])
+  entrevistas      Entrevista[]
+  carta            Carta?
+
+  @@map("postulaciones")
+}
+
+model Entrevista {
+  id             String         @id @default(cuid())
+  postulacionId  String
+  numero         Int?
+  tipo           TipoEntrevista
+  fecha          DateTime
+  link           String?
+  direccion      String?
+  notas          String?
+  creadoEn       DateTime       @default(now())
+  actualizadoEn  DateTime       @updatedAt
+
+  postulacion    Postulacion    @relation(fields: [postulacionId], references: [id])
+
+  @@map("entrevistas")
+}
+
+model Carta {
+  id             String      @id @default(cuid())
+  postulacionId  String      @unique
+  contenido      String
+  tono           TonosCarta
+  plantillaId    String?
+  creadoEn       DateTime    @default(now())
+  actualizadoEn  DateTime    @updatedAt
+
+  postulacion    Postulacion @relation(fields: [postulacionId], references: [id])
+  plantilla      Plantilla?  @relation(fields: [plantillaId], references: [id])
+
+  @@map("cartas")
+}
+
+model Plantilla {
+  id             String    @id @default(cuid())
+  userId         String?
+  nombre         String    @unique
+  contenido      String
+  esDefault      Boolean   @default(false)
+  creadoEn       DateTime  @default(now())
+  actualizadoEn  DateTime  @updatedAt
+
+  usuario        Usuario?  @relation(fields: [userId], references: [id])
+  cartas         Carta[]
+
+  @@map("plantillas")
+}
+
+model Meta {
+  id             String    @id @default(cuid())
+  userId         String
+  tipo           TipoMeta
+  cantidad       Int
+  creadoEn       DateTime  @default(now())
+  actualizadoEn  DateTime  @updatedAt
+
+  usuario        Usuario   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, tipo])
+
+  @@map("metas")
+}
