@@ -2,34 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CrearPostulacionDto } from './dto/crear-postulacion.dto'
 import { ActualizarPostulacionDto } from './dto/actualizar-postulacion.dto'
-import { IaService } from '../ia/ia.service'
-import { UsuariosService } from '../usuarios/usuarios.service'
 
 @Injectable()
 export class PostulacionesService {
     constructor(
         private prisma: PrismaService,
-        private ia: IaService,
-        private usuarios: UsuariosService,
     ) { }
 
     async crear(userId: string, dto: CrearPostulacionDto) {
-        // Traemos el usuario completo para armar el perfil
-        const usuario = await this.usuarios.buscarPorId(userId)
-
-        // Llamamos a la IA para analizar el fit
-        const fit = await this.ia.analizarFit(usuario, dto.descripcion)
-
-        // Creamos la postulacion con los resultados del fit
         return this.prisma.postulacion.create({
             data: {
                 ...dto,
                 userId,
-                matchPorcentaje: fit.matchPorcentaje,
-                skillsMatch: fit.skillsMatch,
-                skillsFaltantes: fit.skillsFaltantes,
-                redFlags: fit.redFlags,
-                veredictoIA: fit.veredicto,
             },
         })
     }

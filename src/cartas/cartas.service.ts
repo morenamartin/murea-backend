@@ -9,8 +9,6 @@ import { UsuariosService } from '../usuarios/usuarios.service'
 export class CartasService {
     constructor(
         private prisma: PrismaService,
-        private ia: IaService,
-        private usuarios: UsuariosService,
     ) { }
 
     async crear(userId: string, dto: CrearCartaDto) {
@@ -19,33 +17,8 @@ export class CartasService {
         })
         if (!postulacion) throw new NotFoundException('Postulación no encontrada')
 
-        // Traemos el usuario completo para armar el perfil
-        const usuario = await this.usuarios.buscarPorId(userId)
-
-        // Si eligió plantilla la buscamos
-        let plantillaContenido: string | undefined
-        if (dto.plantillaId) {
-            const plantilla = await this.prisma.plantilla.findUnique({
-                where: { id: dto.plantillaId },
-            })
-            plantillaContenido = plantilla?.contenido
-        }
-
-        // Llamamos a la IA para generar la carta
-        const contenido = await this.ia.generarCarta(
-            usuario,
-            postulacion.descripcion,
-            dto.tono,
-            plantillaContenido,
-        )
-
         return this.prisma.carta.create({
-            data: {
-                postulacionId: dto.postulacionId,
-                tono: dto.tono,
-                plantillaId: dto.plantillaId,
-                contenido,
-            },
+            data: dto,
         })
     }
 
