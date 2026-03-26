@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, Query } from '@nestjs/common'
 import { PostulacionesService } from './postulaciones.service'
 import { CrearPostulacionDto } from './dto/crear-postulacion.dto'
 import { ActualizarPostulacionDto } from './dto/actualizar-postulacion.dto'
@@ -15,8 +15,8 @@ export class PostulacionesController {
     }
 
     @Get()
-    obtenerTodas(@Request() req: any) {
-        return this.postulacionesService.obtenerTodas(req.user.id)
+    obtenerTodas(@Request() req: any, @Query('page') page: number = 1, @Query('limit') limit: number = 10) {
+        return this.postulacionesService.obtenerTodas(req.user.id, Number(page), Number(limit))
     }
 
     @Get('estadisticas')

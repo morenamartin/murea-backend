@@ -10,15 +10,27 @@ export class PostulacionesService {
     ) { }
 
     async crear(userId: string, dto: CrearPostulacionDto) {
+        const { carta, ...postulacionData } = dto
+
         return this.prisma.postulacion.create({
             data: {
-                ...dto,
+                ...postulacionData,
                 userId,
+                carta: carta ? {
+                    create: {
+                        contenido: carta.contenido,
+                        tono: carta.tono as any, // Cast to TonosCarta enum
+                        plantillaId: carta.plantillaId
+                    }
+                } : undefined
             },
+            include: {
+                carta: true
+            }
         })
     }
 
-    async obtenerTodas(userId: string) {
+    async obtenerTodas(userId: string, page: number, limit: number) {
         return this.prisma.postulacion.findMany({
             where: { userId },
             include: {
@@ -26,6 +38,8 @@ export class PostulacionesService {
                 carta: true,
             },
             orderBy: { creadoEn: 'desc' },
+            skip: (page - 1) * limit,
+            take: limit,
         })
     }
 

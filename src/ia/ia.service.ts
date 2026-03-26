@@ -16,6 +16,16 @@ export class IaService {
         })
     }
 
+    private mockFit() {
+        return {
+            matchPorcentaje: 78,
+            skillsMatch: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+            skillsFaltantes: ['AWS', 'Docker'],
+            redFlags: [],
+            veredicto: 'El perfil matchea bien con el puesto. Tenés las skills principales requeridas. Te falta experiencia en cloud pero es algo que podés aprender en el trabajo.'
+        }
+    }
+
     private armarPerfil(usuario: any): string {
         return `
             CV:
@@ -45,6 +55,10 @@ export class IaService {
     }
 
     async analizarFit(usuario: any, puesto: string) {
+        if (process.env.NODE_ENV !== 'production') {
+            return this.mockFit()
+        }
+
         const perfil = this.armarPerfil(usuario)
         const respuesta = await this.llamarIA(fitSystem(), fitUser(perfil, puesto), 0.3)
 
@@ -54,6 +68,17 @@ export class IaService {
             throw new Error('Error al parsear respuesta de IA')
         }
     }
+
+    // async analizarFit(usuario: any, puesto: string) {
+    //     const perfil = this.armarPerfil(usuario)
+    //     const respuesta = await this.llamarIA(fitSystem(), fitUser(perfil, puesto), 0.3)
+
+    //     try {
+    //         return JSON.parse(respuesta)
+    //     } catch {
+    //         throw new Error('Error al parsear respuesta de IA')
+    //     }
+    // }
 
     async generarCarta(usuario: any, puesto: string, tono: string, plantilla?: string) {
         const perfil = this.armarPerfil(usuario)

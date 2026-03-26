@@ -49,4 +49,11 @@ export class CrearPostulacionDto {
     @IsDateString()
     @IsOptional()
     fechaPostulacion?: string
+
+    @IsOptional()
+    carta?: {
+        contenido: string
+        tono: string
+        plantillaId?: string
+    }
 }
