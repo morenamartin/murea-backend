@@ -12,6 +12,7 @@ import { MetasModule } from './metas/metas.module'
 import { IaModule } from './ia/ia.module'
 import { StorageModule } from './storage/storage.module'
 import { AuthModule } from './auth/auth.module'
+import { CvModule } from './cv/cv.module'
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthModule } from './auth/auth.module'
     IaModule,
     StorageModule,
     AuthModule,
+    CvModule,
   ],
   controllers: [AppController],
   providers: [AppService],

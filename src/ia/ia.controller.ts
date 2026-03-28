@@ -10,6 +10,12 @@ class AnalizarFitDto {
     descripcion: string
 }
 
+class AnalizarCvDto {
+    @IsString()
+    @IsOptional()
+    cv?: string
+}
+
 class GenerarCartaDto {
     @IsString()
     descripcion: string
@@ -51,5 +57,47 @@ export class IaController {
         }
 
         return this.iaService.generarCarta(usuario, dto.descripcion, dto.tono, plantillaContenido)
+    }
+
+    @Post('analizar-cv')
+    @UseGuards(JwtAuthGuard)
+    async analizarCV(@Request() req: any, @Body() dto: AnalizarCvDto) {
+        const usuario = await this.usuariosService.buscarPorId(req.user.id)
+        const cvTexto = dto.cv || usuario.cvs?.[0]?.text || ''
+
+        if (!cvTexto) {
+            return { error: 'No hay texto de CV para analizar' }
+        }
+
+        const summary = await this.iaService.analizarCV(cvTexto)
+
+        // Si tenemos un registro de CV, le guardamos el resumen
+        const ultimoCv = usuario.cvs?.[0]
+        if (ultimoCv) {
+            await this.prisma.cv.update({
+                where: { id: ultimoCv.id },
+                data: { summary: summary as any }
+            })
+        }
+
+        return summary
+    }
+
+    @Post('analizar-github')
+    async analizarGithub(@Request() req: any) {
+        const usuario = await this.usuariosService.buscarPorId(req.user.id)
+        return this.iaService.analizarGithub(usuario.githubs?.[0]?.username || '')
+    }
+
+    @Post('analizar-linkedin')
+    async analizarLinkedin(@Request() req: any) {
+        const usuario = await this.usuariosService.buscarPorId(req.user.id)
+        return this.iaService.analizarLinkedin(usuario.linkedins?.[0]?.rawText || '')
+    }
+
+    @Post('analizar-portfolio')
+    async analizarPortfolio(@Request() req: any) {
+        const usuario = await this.usuariosService.buscarPorId(req.user.id)
+        return this.iaService.analizarPortfolio(usuario.portfolios?.[0]?.rawText || '')
     }
 }

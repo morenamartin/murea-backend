@@ -49,13 +49,7 @@ model Usuario {
   id                   String        @id // Mismo ID de Supabase Auth
   nombre               String
   email                String        @unique
-  cvTexto              String?
-  cvUrl                String?
-  portfolioUrl         String?
-  portfolioContenido   String?
-  githubUsername       String?
-  githubData           Json?
-  linkedinData         Json?
+
   creadoEn             DateTime      @default(now())
   actualizadoEn        DateTime      @updatedAt
   gaps                 Json?
@@ -63,8 +57,68 @@ model Usuario {
   postulaciones        Postulacion[]
   plantillas           Plantilla[]
   metas                Meta[]
+  cvs                  Cv[]
+  githubs              GithubProfile[]
+  linkedins            LinkedinProfile[]
+  portfolios           Portfolio[]
 
   @@map("usuarios")
+}
+
+model Cv {
+  id          String   @id @default(cuid())
+  usuarioId   String
+
+  file        String?
+  text        String?      // texto parseado
+  summary     Json?        // respuesta IA
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usuario     Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model GithubProfile {
+  id          String   @id @default(cuid())
+  usuarioId   String
+
+  username    String
+  rawData     Json?     // repos, lenguajes, etc
+  summary     Json?     // IA
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usuario     Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model LinkedinProfile {
+  id          String   @id @default(cuid())
+  usuarioId   String
+
+  file        String?
+  rawText     String?  // texto parseado o pegado
+  summary     Json?    // IA
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usuario     Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+  usuarioId   String
+
+  url         String
+  rawText     String?  // scrapeado
+  summary     Json?    // IA
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usuario     Usuario @relation(fields: [usuarioId], references: [id])
 }
 
 model Postulacion {

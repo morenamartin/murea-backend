@@ -20,6 +20,12 @@ export class UsuariosService {
     async buscarPorId(id: string) {
         const usuario = await this.prisma.usuario.findUnique({
             where: { id },
+            include: {
+                cvs: true,
+                githubs: true,
+                linkedins: true,
+                portfolios: true,
+            },
         })
         if (!usuario) throw new NotFoundException('Usuario no encontrado')
         return usuario
@@ -64,4 +70,7 @@ export class UsuariosService {
         if (!usuario) throw new NotFoundException('Usuario no encontrado')
         return usuario
     }
+
+
+
 }

@@ -34,7 +34,9 @@ export class PostulacionesService {
         return this.prisma.postulacion.findMany({
             where: { userId },
             include: {
-                entrevistas: true,
+                entrevistas: {
+                    orderBy: { numero: 'asc' },
+                },
                 carta: true,
             },
             orderBy: { creadoEn: 'desc' },
